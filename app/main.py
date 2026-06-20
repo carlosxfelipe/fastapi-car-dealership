@@ -2,9 +2,9 @@ from typing import List
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel, Field
 
-from cars_service import CarsService
+from app.cars_service import CarsService
+from app.models import Car, CarCreate, CarCreateResponse
 
 app = FastAPI(title="Oficial Car Dealership API", version="1.0.0")
 
@@ -30,22 +30,6 @@ def scalar_docs():
 
 
 cars_service = CarsService()
-
-
-class Car(BaseModel):
-    id: int
-    brand: str
-    model: str
-
-
-class CarCreate(BaseModel):
-    brand: str = Field(..., min_length=2)
-    model: str = Field(..., min_length=2)
-
-
-class CarCreateResponse(BaseModel):
-    status: str
-    car: Car
 
 
 @app.get(
