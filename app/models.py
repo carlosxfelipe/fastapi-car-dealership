@@ -8,8 +8,8 @@ class Car(BaseModel):
 
 
 class CarCreate(BaseModel):
-    brand: str = Field(..., min_length=2)
-    model: str = Field(..., min_length=2)
+    brand: str = Field(min_length=2)
+    model: str = Field(min_length=2)
 
 
 class CarCreateResponse(BaseModel):

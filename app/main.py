@@ -1,4 +1,4 @@
-
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse
@@ -34,8 +34,12 @@ def scalar_docs():
 
 cars_service_instance = CarsService()
 
-async def get_cars_service():
+
+def get_cars_service():
     return cars_service_instance
+
+
+CarsServiceDep = Annotated[CarsService, Depends(get_cars_service)]
 
 
 @app.get(
@@ -44,7 +48,7 @@ async def get_cars_service():
     tags=["Carros"],
     description="Retorna a lista de carros em estoque.",
 )
-async def get_cars(cars_service: CarsService = Depends(get_cars_service)):
+def get_cars(cars_service: CarsServiceDep):
     return cars_service.find_all()
 
 
@@ -59,7 +63,7 @@ async def get_cars(cars_service: CarsService = Depends(get_cars_service)):
         422: {"description": "O ID fornecido não é um número válido"},
     },
 )
-async def get_car(id: int, cars_service: CarsService = Depends(get_cars_service)):
+def get_car(id: int, cars_service: CarsServiceDep):
     car = cars_service.find_one_by_id(id)
     if car:
         return car
@@ -74,8 +78,6 @@ async def get_car(id: int, cars_service: CarsService = Depends(get_cars_service)
     status_code=status.HTTP_201_CREATED,
     response_model=CarCreateResponse,
 )
-async def create_car(
-    body: CarCreate, cars_service: CarsService = Depends(get_cars_service)
-):
+def create_car(body: CarCreate, cars_service: CarsServiceDep):
     car = cars_service.create(body.brand, body.model)
     return {"status": f"Carro {car['brand']} adicionado com sucesso!", "car": car}
