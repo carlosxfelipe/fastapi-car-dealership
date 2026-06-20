@@ -39,7 +39,7 @@ cars_service = CarsService()
     description="Retorna a lista de carros em estoque.",
     response_model=List[Car],
 )
-def get_cars():
+async def get_cars():
     return cars_service.find_all()
 
 
@@ -54,7 +54,7 @@ def get_cars():
         422: {"description": "O ID fornecido não é um número válido"},
     },
 )
-def get_car(id: int):
+async def get_car(id: int):
     car = cars_service.find_one_by_id(id)
     if car:
         return car
@@ -69,6 +69,6 @@ def get_car(id: int):
     status_code=status.HTTP_201_CREATED,
     response_model=CarCreateResponse,
 )
-def create_car(body: CarCreate):
+async def create_car(body: CarCreate):
     car = cars_service.create(body.brand, body.model)
     return {"status": f"Carro {car['brand']} adicionado com sucesso!", "car": car}

@@ -9,6 +9,8 @@ uv sync
 uv run python scripts/dev.py
 ```
 
+> O script `scripts/dev.py` agora inicia o Uvicorn diretamente, com workers configurados e reload desabilitado para estimar performance mais realista.
+
 ## Rotas
 
 | Método | Rota        | Descrição              |
