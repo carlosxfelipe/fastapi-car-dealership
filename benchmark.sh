@@ -8,7 +8,7 @@ fuser -k 8000/tcp 2>/dev/null || true
 
 # Inicia o servidor em background
 echo "Iniciando servidor FastAPI com uvloop..."
-uv run uvicorn app.main:app --port 8000 --loop uvloop &
+uv run uvicorn app.main:app --port 8000 --loop uvloop --workers 4 --log-level warning &
 PID=$!
 
 echo "Aguardando inicialização do servidor (5s)..."

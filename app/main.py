@@ -1,7 +1,7 @@
-from typing import List
+
 
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.responses import HTMLResponse, ORJSONResponse
+from fastapi.responses import HTMLResponse
 
 from app.cars_service import CarsService
 from app.models import Car, CarCreate, CarCreateResponse
@@ -9,7 +9,6 @@ from app.models import Car, CarCreate, CarCreateResponse
 app = FastAPI(
     title="Oficial Car Dealership API",
     version="1.0.0",
-    default_response_class=ORJSONResponse,
 )
 
 
@@ -33,8 +32,10 @@ def scalar_docs():
     )
 
 
+cars_service_instance = CarsService()
+
 async def get_cars_service():
-    return CarsService()
+    return cars_service_instance
 
 
 @app.get(
@@ -42,7 +43,6 @@ async def get_cars_service():
     summary="Lista todos os carros",
     tags=["Carros"],
     description="Retorna a lista de carros em estoque.",
-    response_model=List[Car],
 )
 async def get_cars(cars_service: CarsService = Depends(get_cars_service)):
     return cars_service.find_all()
@@ -60,7 +60,7 @@ async def get_cars(cars_service: CarsService = Depends(get_cars_service)):
     },
 )
 async def get_car(id: int, cars_service: CarsService = Depends(get_cars_service)):
-    car = await cars_service.find_one_by_id(id)
+    car = cars_service.find_one_by_id(id)
     if car:
         return car
     raise HTTPException(status_code=404, detail="Not found")
@@ -77,5 +77,5 @@ async def get_car(id: int, cars_service: CarsService = Depends(get_cars_service)
 async def create_car(
     body: CarCreate, cars_service: CarsService = Depends(get_cars_service)
 ):
-    car = await cars_service.create(body.brand, body.model)
+    car = cars_service.create(body.brand, body.model)
     return {"status": f"Carro {car['brand']} adicionado com sucesso!", "car": car}
