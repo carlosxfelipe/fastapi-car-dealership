@@ -1,20 +1,27 @@
+import os
 import sys
-from multiprocessing import cpu_count
 from pathlib import Path
-
-import uvicorn
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from free_port import free_port
 
 if __name__ == "__main__":
     free_port(8000)
-    workers = max(1, min(4, cpu_count()))
 
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        workers=workers,
-        reload=False,
+    # Using a reasonable fixed number of workers instead of all available cores
+    workers = "4"
+
+    print(f"Starting uvicorn via CLI with {workers} workers...")
+    os.execvp(
+        "uvicorn",
+        [
+            "uvicorn",
+            "app.main:app",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8000",
+            "--workers",
+            workers,
+        ],
     )
