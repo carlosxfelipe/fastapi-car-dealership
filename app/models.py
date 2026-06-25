@@ -1,8 +1,16 @@
-from pydantic import BaseModel, Field
+from typing import Optional
+from uuid import UUID
+
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import ConfigDict, Field
+
+
+class BaseModel(PydanticBaseModel):
+    model_config = ConfigDict(extra="forbid")
 
 
 class Car(BaseModel):
-    id: int
+    id: UUID
     brand: str
     model: str
 
@@ -12,6 +20,6 @@ class CarCreate(BaseModel):
     model: str = Field(min_length=2)
 
 
-class CarCreateResponse(BaseModel):
-    status: str
-    car: Car
+class CarUpdate(BaseModel):
+    brand: Optional[str] = Field(default=None, min_length=2)
+    model: Optional[str] = Field(default=None, min_length=2)

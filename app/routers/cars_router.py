@@ -1,13 +1,15 @@
-from typing import Annotated
+import uuid
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.cars_service import CarsService
-from app.models import Car, CarCreate, CarCreateResponse
+from app.exceptions import CarNotFoundError
+from app.models import Car, CarCreate, CarUpdate
 from app.responses import (
-    create_car_responses,
+    delete_car_responses,
     get_car_by_id_responses,
-    list_cars_responses,
+    update_car_responses,
 )
 
 router = APIRouter(prefix="/cars", tags=["Carros"])
@@ -26,7 +28,7 @@ CarsServiceDep = Annotated[CarsService, Depends(get_cars_service)]
     "",
     summary="Lista todos os carros",
     description="Retorna a lista de carros em estoque.",
-    responses=list_cars_responses,
+    response_model=List[Car],
 )
 def find_all(cars_service: CarsServiceDep):
     return cars_service.find_all()
@@ -39,11 +41,11 @@ def find_all(cars_service: CarsServiceDep):
     response_model=Car,
     responses=get_car_by_id_responses,
 )
-def find_one_by_id(id: int, cars_service: CarsServiceDep):
-    car = cars_service.find_one_by_id(id)
-    if car:
-        return car
-    raise HTTPException(status_code=404, detail="Not found")
+def find_one_by_id(id: uuid.UUID, cars_service: CarsServiceDep):
+    try:
+        return cars_service.find_one_by_id(id)
+    except CarNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.post(
@@ -51,9 +53,35 @@ def find_one_by_id(id: int, cars_service: CarsServiceDep):
     summary="Adiciona um carro",
     description="Adiciona um novo carro ao estoque.",
     status_code=status.HTTP_201_CREATED,
-    response_model=CarCreateResponse,
-    responses=create_car_responses,
+    response_model=Car,
 )
 def create(body: CarCreate, cars_service: CarsServiceDep):
-    car = cars_service.create(body.brand, body.model)
-    return {"status": f"Carro {car['brand']} adicionado com sucesso!", "car": car}
+    return cars_service.create(body)
+
+
+@router.patch(
+    "/{id}",
+    summary="Atualiza um carro",
+    description="Atualiza parcialmente as informações de um carro.",
+    response_model=Car,
+    responses=update_car_responses,
+)
+def update_car(id: uuid.UUID, body: CarUpdate, cars_service: CarsServiceDep):
+    try:
+        return cars_service.update(id, body)
+    except CarNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.delete(
+    "/{id}",
+    summary="Remove um carro",
+    description="Remove um carro do estoque pelo seu ID.",
+    responses=delete_car_responses,
+)
+def delete_car(id: uuid.UUID, cars_service: CarsServiceDep):
+    try:
+        cars_service.delete(id)
+    except CarNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {"message": f"Carro com id {id} deletado com sucesso."}
